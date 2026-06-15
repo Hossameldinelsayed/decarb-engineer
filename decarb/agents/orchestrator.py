@@ -66,6 +66,7 @@ def _select(site: SiteProfile, baseline: SiteState,
     state = baseline.copy()
     selected: list[Measure] = []
     spent = 0.0
+    used_groups: set[str] = set()   # exclusive_group -> at most one solution each
 
     for pillar in _PILLAR_ORDER:
         pool = [p for p in proposals if p.pillar == pillar]
@@ -86,6 +87,9 @@ def _select(site: SiteProfile, baseline: SiteState,
             best_i = best = best_state = None
             best_ratio = 0.0
             for i, proposal in enumerate(remaining):
+                group = proposal.params.get("exclusive_group")
+                if group and group in used_groups:
+                    continue  # an alternative in this group is already chosen
                 measure, new_state, sel = _score_on(site, state, proposal)
                 if sel <= _EPS or spent + measure.capex > budget + 1e-6:
                     continue
@@ -96,6 +100,9 @@ def _select(site: SiteProfile, baseline: SiteState,
                 break
             selected.append(best)
             state, spent = best_state, spent + best.capex
+            group = best.proposal.params.get("exclusive_group")
+            if group:
+                used_groups.add(group)
             remaining.pop(best_i)
 
     return selected, state

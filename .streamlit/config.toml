@@ -1,0 +1,11 @@
+# Schneider Electric brand theme.
+# Primary green #3DCD58 (Pantone 2270 C); dark green ink for text/headers.
+[theme]
+primaryColor = "#3DCD58"
+backgroundColor = "#F1FAF3"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0E2A1B"
+font = "sans serif"
+
+[server]
+headless = true

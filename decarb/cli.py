@@ -49,12 +49,12 @@ def _print_roadmap(rm: Roadmap) -> None:
 
     print(f"\n  -> {rm.pct_to_net_zero:.1f}% to net-zero (operational, market-based)")
     print(f"  -> {rm.operational_reduction_tco2e:,.1f} tCO2e/yr operational reduction")
-    print(f"  -> Total capex ${rm.total_capex:,.0f}")
+    print(f"  -> Total capex EUR {rm.total_capex:,.0f}")
     print(f"  -> Residual location-based operational: "
           f"{rm.final_inventory.operational_location:,.1f} tCO2e (physical grid dependence)")
 
     print("\n  Selected measures:")
-    print(f"  {'Yr':>4} {'Pillar':10} {'Measure':42} {'Capex':>12} {'tCO2e/yr':>9} {'$/tCO2e':>9}")
+    print(f"  {'Yr':>4} {'Pillar':10} {'Measure':42} {'Capex EUR':>12} {'tCO2e/yr':>9} {'EUR/t':>9}")
     print("  " + "-" * 90)
     for m in rm.measures:
         cpt = "n/a" if m.cost_per_tco2e == float("inf") else f"{m.cost_per_tco2e:,.0f}"
@@ -69,7 +69,7 @@ def _print_roadmap(rm: Roadmap) -> None:
 
     print("\n  Cost / carbon frontier (real, location-based abatement):")
     for p in rm.pareto:
-        print(f"    ${p.capex:>11,.0f}  ->  {p.tco2e_reduction:7.1f} tCO2e/yr  "
+        print(f"    EUR {p.capex:>11,.0f}  ->  {p.tco2e_reduction:7.1f} tCO2e/yr  "
               f"({p.measure_count} measures)")
 
 

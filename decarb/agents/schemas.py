@@ -21,8 +21,8 @@ class AgentProposal(BaseModel):
     params: dict[str, Any] = Field(
         default_factory=dict,
         description=(
-            "Action knobs. lighting_retrofit/hvac_upgrade/bms_controls/"
-            "envelope/plug_load_mgmt -> {'reduction': 0..0.8}. "
+            "Action knobs. efficiency_solution -> {'solution_id': '<id from the "
+            "Schneider catalog>'}. "
             "electrify_end_use -> {'target': '<fossil end-use name>'}. "
             "rooftop_pv -> {'roof_fraction': 0..1} or {'kwp': <number>}. "
             "battery_storage -> {'battery_kwh': <number>}. "

@@ -36,11 +36,12 @@ decarb/
   engineering/   deterministic physics — NO LLM
     factors.py     all emission & cost factors (the single audit basis)
     carbon.py      GHG ledger: Scope 1, Scope 2 (location + market), Scope 3
-    efficiency.py  Reduce pillar
+    efficiency.py  Reduce pillar — prices Schneider catalog solutions at €/m² × area
     electrify.py   Electrify pillar
     supply.py      Replace pillar (PV / battery / PPA)
     simulate.py    score a proposal (marginal tCO2e) + apply it to a state
     adapters.py    Protocol interfaces for the SE tools above
+  catalog.py     Schneider solution catalog loader (Reduce / Replace / Electrify)
   agents/        LLM agents (Anthropic SDK) — return structured JSON proposals
     reduce_agent.py  electrify_agent.py  replace_agent.py
     orchestrator.py  coordinates agents, scores on the coupled state, builds roadmap
@@ -48,10 +49,24 @@ decarb/
   validation/    expert_gate.py — guardrails, approve / edit / reject, audit log
   cli.py         command-line entry point
   storage.py     scenarios / roadmaps / decision log <-> JSON
-app/             streamlit_app.py — the UI
-data/            demo_office.json — seeded mid-size office scenario
+app/             streamlit_app.py — Schneider-branded UI (Reduce → Replace → Electrify)
+.streamlit/      config.toml — Schneider brand theme (green #3DCD58)
+data/            demo_office.json + schneider_solutions.json (the solution catalog)
 tests/           pytest suite (carbon math, engineering, end-to-end)
 ```
+
+### Reduce-first, priced per m² (the priority pillar)
+
+Reduce is the lead pillar — it is the indirect market for Schneider's efficiency
+portfolio. Each Reduce option in `data/schneider_solutions.json` maps to a real
+EcoStruxure / SpaceLogic / Altivar product, an `energy_saving_fraction`, and a
+**€/m²** price, so the **building floor area drives both the carbon reduction and
+the total price** (`total € = €/m² × area`). Solutions targeting the same end-use
+(e.g. several HVAC measures) stack with accurate diminishing returns, and mutually
+exclusive options (full BMS vs the small-building alternative) are de-duplicated.
+Pricing is an illustrative, adjustable benchmark — **not** an official Schneider
+quote. Replace and Electrify follow as steps 2 and 3; the UI Electrify step *asks*
+whether the site has gas/oil heating, a standby generator, or a combustion fleet.
 
 ## GHG accounting rules implemented
 
@@ -121,9 +136,10 @@ Useful flags: `--offline` / `--live`, `--min-pct 80` (guardrail),
 streamlit run app/streamlit_app.py
 ```
 
-Shows (a) the GHG baseline by scope, (b) the proposed roadmap with per-measure
-tCO2e/cost, (c) the path-to-net-zero chart + cost/carbon frontier, and
-(d) the expert approval panel.
+Schneider-branded, three-step flow: **Step 1 Reduce** (catalog of efficiency
+solutions priced €/m² for the building), **Step 2 Replace** (PV / storage / PPA),
+**Step 3 Electrify** (asks about gas heating / generator / fleet), then the
+net-zero trajectory and the mandatory expert approval panel.
 
 ### Live LLM agents (optional)
 
@@ -144,9 +160,11 @@ with `DECARB_AGENT_MODEL`). Any live-call failure falls back to offline proposal
 ## Demo result (seeded office)
 
 Baseline operational emissions **887 tCO2e/yr** (Scope 1 171.5 + market Scope 2
-715.5; Scope 3 650 reported separately). The roadmap reaches **~100% to net-zero
-operational** for **~$1.44M** capex, while **location-based** Scope 2 retains
-**~305 tCO2e/yr** — surfacing the physical grid dependence behind the
+715.5; Scope 3 650 reported separately). The **Reduce** pillar alone — six
+Schneider efficiency solutions priced at **~€900k** for the 12,000 m² building —
+cuts **~305 tCO2e/yr**. Adding Replace + Electrify, the roadmap reaches **~100% to
+net-zero operational** for **~€1.98M** capex, while **location-based** Scope 2
+retains **~227 tCO2e/yr** — surfacing the physical grid dependence behind the
 market-based net-zero claim.
 
 ## Tests

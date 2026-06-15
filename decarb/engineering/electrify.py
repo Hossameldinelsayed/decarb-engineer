@@ -104,7 +104,7 @@ def simulate(site: SiteProfile, state: SiteState,
                   - fuel_kwh * site.tariff.fuel_price_per_kwh)
 
     return MeasureEffect(
-        electricity_kwh_delta=+elec_kwh,
+        extra_kwh_delta=+elec_kwh,
         fuel_kwh_delta=-fuel_kwh,
         target_fossil_name=target,
         capex=capex,

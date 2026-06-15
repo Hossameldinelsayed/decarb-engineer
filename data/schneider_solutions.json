@@ -1,0 +1,147 @@
+{
+  "_comment": "Schneider Electric solution catalog. Pricing is in EUR/m2 of floor area and is an ILLUSTRATIVE, ADJUSTABLE benchmark (not an official Schneider quote). energy_saving_fraction is the fraction of the TARGETED end-use(s) avoided. Reduce is the priority pillar (indirect market for SE efficiency solutions). Product names are real EcoStruxure/SpaceLogic/Altivar offerings; savings ranges are from public Schneider material and industry benchmarks (see source).",
+  "reduce": [
+    {
+      "id": "connected_room",
+      "name": "EcoStruxure Connected Room (SpaceLogic occupancy control)",
+      "product": "SpaceLogic room controllers + Insight-Sensor + EcoStruxure Building Operation",
+      "target_end_uses": ["hvac", "lighting"],
+      "energy_saving_fraction": 0.23,
+      "capex_eur_per_m2": 18.0,
+      "exclusive_group": null,
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "Occupancy- and people-count-based control of HVAC and lighting at room level.",
+      "source": "Schneider: Connected Room Solutions deliver up to 23% energy savings."
+    },
+    {
+      "id": "led_lighting",
+      "name": "LED relamping + lighting management",
+      "product": "SpaceLogic / KNX lighting control + LED luminaires",
+      "target_end_uses": ["lighting"],
+      "energy_saving_fraction": 0.55,
+      "capex_eur_per_m2": 25.0,
+      "exclusive_group": "lighting",
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "LED retrofit with daylight harvesting and presence control.",
+      "source": "Industry benchmark ~EUR 20-40/m2; LED + controls cut lighting 40-60%."
+    },
+    {
+      "id": "bms_analytics",
+      "name": "EcoStruxure Building Operation + Building Advisor (BMS + fault detection)",
+      "product": "EcoStruxure Building Operation, EcoStruxure Building Advisor",
+      "target_end_uses": ["hvac"],
+      "energy_saving_fraction": 0.15,
+      "capex_eur_per_m2": 30.0,
+      "exclusive_group": "bms",
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "Continuous commissioning, fault detection & diagnostics, setpoint optimisation.",
+      "source": "BMS benchmark ~EUR 27-75/m2; analytics/commissioning cut HVAC 10-20%."
+    },
+    {
+      "id": "building_activate",
+      "name": "EcoStruxure Building Activate (small / mid-size buildings)",
+      "product": "EcoStruxure Building Activate",
+      "target_end_uses": ["hvac", "lighting"],
+      "energy_saving_fraction": 0.12,
+      "capex_eur_per_m2": 12.0,
+      "exclusive_group": "bms",
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "Cloud building management for buildings under ~9,300 m2; alternative to Building Operation.",
+      "source": "Schneider: EcoStruxure Building Activate for buildings under 100,000 sq ft."
+    },
+    {
+      "id": "vsd_drives",
+      "name": "Altivar variable speed drives on HVAC motors",
+      "product": "Altivar process / HVAC variable speed drives",
+      "target_end_uses": ["hvac"],
+      "energy_saving_fraction": 0.20,
+      "capex_eur_per_m2": 9.0,
+      "exclusive_group": null,
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "Speed control of pumps and fans replaces throttling/damper losses.",
+      "source": "VSDs on pumps/fans typically cut motor energy 20-30%."
+    },
+    {
+      "id": "power_monitoring",
+      "name": "EcoStruxure Power Monitoring (PME + PowerTag)",
+      "product": "EcoStruxure Power Monitoring Expert + PowerTag energy sensors",
+      "target_end_uses": ["hvac", "lighting", "plug_loads", "other"],
+      "energy_saving_fraction": 0.06,
+      "capex_eur_per_m2": 7.0,
+      "exclusive_group": null,
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "Sub-metering visibility and alarms drive operational/behavioural savings across all loads.",
+      "source": "Metering-driven operational savings typically 5-10%."
+    },
+    {
+      "id": "plug_load_mgmt",
+      "name": "Smart plug-load management",
+      "product": "Wiser smart sockets + scheduling",
+      "target_end_uses": ["plug_loads"],
+      "energy_saving_fraction": 0.18,
+      "capex_eur_per_m2": 4.0,
+      "exclusive_group": null,
+      "scopes_affected": ["2_location", "2_market"],
+      "note": "Standby control and scheduling of plug and office loads.",
+      "source": "Plug-load scheduling and standby control typically save 15-20%."
+    }
+  ],
+  "replace": [
+    {
+      "id": "rooftop_pv",
+      "name": "Rooftop solar PV",
+      "product": "Schneider Conext inverters + EcoStruxure Microgrid Operation",
+      "action_type": "rooftop_pv",
+      "params": { "roof_fraction": 1.0 },
+      "note": "On-site generation displaces grid import (Scope 2).",
+      "source": "Sizing from usable roof area and location specific yield."
+    },
+    {
+      "id": "battery_storage",
+      "name": "Battery energy storage",
+      "product": "Schneider battery + EcoStruxure Microgrid Advisor dispatch",
+      "action_type": "battery_storage",
+      "params": { "battery_kwh": 800 },
+      "note": "Shifts daytime PV surplus into evening load to lift self-consumption.",
+      "source": "Battery capex benchmark ~EUR 350/kWh."
+    },
+    {
+      "id": "green_ppa",
+      "name": "Green power PPA / RECs",
+      "product": "Schneider Energy & Sustainability Services (PPA / REC sourcing)",
+      "action_type": "green_procurement",
+      "params": { "coverage_fraction": 1.0 },
+      "note": "Cleans residual grid import on a market-based basis (Scope 2 market).",
+      "source": "Contractual instrument; affects market-based Scope 2 only."
+    }
+  ],
+  "electrify": [
+    {
+      "id": "heat_pump",
+      "name": "Electrify gas heating with heat pumps",
+      "product": "Heat pump plant + EcoStruxure Building Operation control",
+      "method_match": ["heat_pump", "resistive"],
+      "fuel_match": ["natural_gas", "lpg", "fuel_oil"],
+      "note": "Removes Scope 1 combustion; adds a smaller electric load via heat-pump COP.",
+      "source": "Heat pump COP ~3.2 vs boiler efficiency ~0.88."
+    },
+    {
+      "id": "genset_grid_tie",
+      "name": "Replace standby genset with grid + storage",
+      "product": "Schneider switchgear + EcoStruxure Microgrid",
+      "method_match": ["grid_tie"],
+      "fuel_match": ["diesel"],
+      "note": "Removes diesel combustion by sourcing standby power from grid/storage.",
+      "source": "Genset electrical efficiency ~0.33."
+    },
+    {
+      "id": "ev_fleet",
+      "name": "Electrify combustion vehicle fleet",
+      "product": "EVlink Pro chargers + EcoStruxure EV Charging Expert",
+      "method_match": ["ev_fleet"],
+      "fuel_match": ["diesel", "petrol"],
+      "note": "Replaces fleet fuel with EV charging load (much higher drivetrain efficiency).",
+      "source": "EV final energy ~30% of fossil final energy."
+    }
+  ]
+}

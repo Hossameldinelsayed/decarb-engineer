@@ -23,12 +23,8 @@ class Pillar(str, Enum):
 
 
 class ActionType(str, Enum):
-    # Reduce
-    LIGHTING_RETROFIT = "lighting_retrofit"
-    HVAC_UPGRADE = "hvac_upgrade"
-    BMS_CONTROLS = "bms_controls"
-    ENVELOPE = "envelope"
-    PLUG_LOAD_MGMT = "plug_load_mgmt"
+    # Reduce — a Schneider efficiency solution from the catalog (params.solution_id)
+    EFFICIENCY_SOLUTION = "efficiency_solution"
     # Electrify
     ELECTRIFY_END_USE = "electrify_end_use"
     # Replace
@@ -68,7 +64,9 @@ class Measure(BaseModel):
     # Computed by engineering — NOT by the LLM.
     capex: float = 0.0
     annual_opex_delta: float = 0.0          # +cost / -savings per year
-    electricity_kwh_delta: float = 0.0      # change in annual electricity demand
+    electricity_kwh_delta: float = 0.0      # net change in annual electricity demand
+    end_use_deltas: dict[str, float] = Field(default_factory=dict)  # building-load changes
+    extra_kwh_delta: float = 0.0            # electrification-added load
     fuel_kwh_delta: float = 0.0             # change in annual fossil fuel use
     pv_kwp: float = 0.0
     pv_generation_kwh: float = 0.0

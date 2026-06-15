@@ -5,8 +5,10 @@ from decarb.engineering.state import FossilUseState, SiteState
 
 
 def _state(**kw) -> SiteState:
+    # Total building demand 1,000,000 kWh (placed in one bucket; the ledger only
+    # uses the total). Override fossil_uses / ppa_rec_kwh / pv_generation_kwh etc.
     base = dict(
-        electricity_demand_kwh=1_000_000,
+        end_use_kwh={"hvac": 1_000_000, "lighting": 0, "plug_loads": 0, "other": 0},
         fossil_uses=[],
         grid_avg_intensity=0.4,
         market_residual_factor=0.4,

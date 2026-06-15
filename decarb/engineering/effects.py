@@ -2,6 +2,10 @@
 
 Produced by the efficiency / electrify / supply modules; consumed by
 `simulate.py` to mutate a SiteState and to build a scored `Measure`.
+
+Energy effects are split so they map onto the per-end-use SiteState:
+  - end_use_deltas : changes to building end-use buckets (Reduce; negative)
+  - extra_kwh_delta: electrification-added load (Electrify; positive)
 """
 
 from __future__ import annotations
@@ -12,9 +16,10 @@ from typing import Optional
 
 @dataclass
 class MeasureEffect:
-    electricity_kwh_delta: float = 0.0   # - = saving, + = added load
-    fuel_kwh_delta: float = 0.0          # - = fuel removed
-    target_fossil_name: Optional[str] = None  # fossil end-use this measure reduces
+    end_use_deltas: dict[str, float] = field(default_factory=dict)  # building loads, - = saving
+    extra_kwh_delta: float = 0.0          # electrification-added electric load (+)
+    fuel_kwh_delta: float = 0.0           # - = fuel removed
+    target_fossil_name: Optional[str] = None
     pv_kwp: float = 0.0
     pv_generation_kwh: float = 0.0
     battery_kwh: float = 0.0
@@ -24,3 +29,8 @@ class MeasureEffect:
     scopes_affected: list[str] = field(default_factory=list)
     assumptions: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
+
+    @property
+    def electricity_kwh_delta(self) -> float:
+        """Net change in total electricity demand (for display)."""
+        return sum(self.end_use_deltas.values()) + self.extra_kwh_delta

@@ -26,26 +26,46 @@ def _simulate_effect(site: SiteProfile, state: SiteState,
     raise ValueError(f"Unknown pillar: {proposal.pillar}")
 
 
+def _apply(state: SiteState, *, end_use_deltas: dict[str, float], extra_kwh_delta: float,
+           fuel_kwh_delta: float, target_fossil_name: str | None,
+           pv_kwp: float, pv_generation_kwh: float, battery_kwh: float,
+           ppa_rec_kwh: float) -> SiteState:
+    new = state.copy()
+    for use, delta in end_use_deltas.items():
+        new.end_use_kwh[use] = max(0.0, new.end_use_kwh.get(use, 0.0) + delta)
+    new.extra_kwh = max(0.0, new.extra_kwh + extra_kwh_delta)
+    if target_fossil_name and fuel_kwh_delta:
+        fu = new.find_fossil(target_fossil_name)
+        if fu is not None:
+            fu.fuel_kwh = max(0.0, fu.fuel_kwh + fuel_kwh_delta)
+    new.pv_kwp += pv_kwp
+    new.pv_generation_kwh += pv_generation_kwh
+    new.battery_kwh += battery_kwh
+    new.ppa_rec_kwh += ppa_rec_kwh
+    return new
+
+
 def apply_effect_to_state(state: SiteState, effect: MeasureEffect) -> SiteState:
     """Return a new state with the measure's physical effect applied."""
-    new = state.copy()
-    new.electricity_demand_kwh = max(0.0, new.electricity_demand_kwh
-                                     + effect.electricity_kwh_delta)
-    if effect.target_fossil_name and effect.fuel_kwh_delta:
-        use = new.find_fossil(effect.target_fossil_name)
-        if use is not None:
-            use.fuel_kwh = max(0.0, use.fuel_kwh + effect.fuel_kwh_delta)
-    new.pv_kwp += effect.pv_kwp
-    new.pv_generation_kwh += effect.pv_generation_kwh
-    new.battery_kwh += effect.battery_kwh
-    new.ppa_rec_kwh += effect.ppa_rec_kwh
-    return new
+    return _apply(
+        state,
+        end_use_deltas=effect.end_use_deltas,
+        extra_kwh_delta=effect.extra_kwh_delta,
+        fuel_kwh_delta=effect.fuel_kwh_delta,
+        target_fossil_name=effect.target_fossil_name,
+        pv_kwp=effect.pv_kwp,
+        pv_generation_kwh=effect.pv_generation_kwh,
+        battery_kwh=effect.battery_kwh,
+        ppa_rec_kwh=effect.ppa_rec_kwh,
+    )
 
 
 def apply_measure(state: SiteState, measure: Measure) -> SiteState:
     """Apply an already-scored Measure to a state (used for year-by-year replay)."""
-    effect = MeasureEffect(
-        electricity_kwh_delta=measure.electricity_kwh_delta,
+    return _apply(
+        state,
+        end_use_deltas=measure.end_use_deltas,
+        extra_kwh_delta=measure.extra_kwh_delta,
         fuel_kwh_delta=measure.fuel_kwh_delta,
         target_fossil_name=measure.proposal.params.get("target"),
         pv_kwp=measure.pv_kwp,
@@ -53,7 +73,6 @@ def apply_measure(state: SiteState, measure: Measure) -> SiteState:
         battery_kwh=measure.battery_kwh,
         ppa_rec_kwh=measure.ppa_rec_kwh,
     )
-    return apply_effect_to_state(state, effect)
 
 
 def score_proposal(site: SiteProfile, state: SiteState,
@@ -73,6 +92,8 @@ def score_proposal(site: SiteProfile, state: SiteState,
         capex=effect.capex,
         annual_opex_delta=effect.annual_opex_delta,
         electricity_kwh_delta=effect.electricity_kwh_delta,
+        end_use_deltas=dict(effect.end_use_deltas),
+        extra_kwh_delta=effect.extra_kwh_delta,
         fuel_kwh_delta=effect.fuel_kwh_delta,
         pv_kwp=effect.pv_kwp,
         pv_generation_kwh=effect.pv_generation_kwh,
