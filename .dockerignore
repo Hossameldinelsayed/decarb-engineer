@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.claude/
+tests/
+out/
+*.result.json
+decision_log.json
+.env
+.streamlit/secrets.toml
+*.md
+!README.md

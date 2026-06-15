@@ -99,10 +99,8 @@ html, body, [class*="css"], .stApp, button, input, textarea { font-family: 'Inte
 .layer { border-radius:16px; padding:15px 20px; color:#fff; box-shadow:0 12px 26px rgba(11,42,26,.16);
         transition:transform .25s ease, box-shadow .25s ease; animation:fadeUp .6s ease both; }
 .layer:hover { transform:translateY(-5px); box-shadow:0 18px 36px rgba(11,42,26,.26); }
-.layer .lhead { display:flex; align-items:baseline; gap:10px; }
-.layer .lname { font-weight:800; font-size:16px; letter-spacing:.4px; }
-.layer .lkicker { font-size:11.5px; font-weight:700; opacity:.85; letter-spacing:1px; }
-.layer .ldesc { font-size:12.5px; opacity:.92; margin:3px 0 11px; }
+.layer .lname { font-weight:800; font-size:18px; letter-spacing:2px; }
+.layer .ldesc { font-size:12.5px; opacity:.92; margin:4px 0 11px; }
 .layer.optimize { background:linear-gradient(120deg,#08230F,#1C7A3B); }
 .layer.operate  { background:linear-gradient(120deg,#1C7A3B,#2EA24A); }
 .layer.onboard  { background:linear-gradient(120deg,#2EA24A,#3DCD58); color:#08230F; }
@@ -269,21 +267,20 @@ def _chips(items: list[str]) -> str:
         for i, c in enumerate(items))
 
 
-def _layer(key: str, kicker: str, name: str, desc: str, delay: float) -> str:
+def _layer(key: str, name: str, desc: str, delay: float) -> str:
     return (f'<div class="layer {key}" style="animation-delay:{delay:.2f}s">'
-            f'<div class="lhead"><span class="lname">{name}</span>'
-            f'<span class="lkicker">{kicker}</span></div>'
+            f'<div class="lname">{name}</div>'
             f'<div class="ldesc">{desc}</div>{_chips(layers[key])}</div>')
 
 
 st.markdown(
     '<div class="arch">'
-    + _layer("optimize", "OPTIMIZE", "Apps, Analytics &amp; Services",
-             "Advisory, fault-detection analytics, clean supply and electrification.", 0.0)
-    + _layer("operate", "OPERATE", "Edge Control",
-             "Building management, room control and drives running the building efficiently.", 0.08)
-    + _layer("onboard", "ONBOARD", "Connected Products",
-             "Meter, sense and connect to build the data foundation.", 0.16)
+    + _layer("optimize", "OPTIMIZE",
+             "Analyse, advise, and transform supply and end-uses.", 0.0)
+    + _layer("operate", "OPERATE",
+             "Supervisory software that runs the building efficiently.", 0.08)
+    + _layer("onboard", "ONBOARD",
+             "Connect, sense and meter the building's field devices.", 0.16)
     + "</div>", unsafe_allow_html=True)
 
 # Headline KPIs + animated net-zero bar.

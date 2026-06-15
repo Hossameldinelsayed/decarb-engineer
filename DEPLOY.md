@@ -1,53 +1,70 @@
-# Deploying the AI Decarbonization Engineer to a public link
+# Hosting the AI Decarbonization Engineer
 
-The app is built to run on **Streamlit Community Cloud** (free, gives a public
-`https://<name>.streamlit.app` URL anyone can open). It runs fully offline (no
-API key); the live-LLM mode is optional.
+The app is designed to be hosted **inside the corporate network** — no external
+site, no public link (corporate security blocks those). It runs fully offline
+(no API key); live-LLM mode is optional.
 
-## 1. Put the code on GitHub (one time)
+## Option A (recommended): Docker, hosted internally
 
-The GitHub CLI is installed. From the project folder:
+Build once on a machine that can reach PyPI (or a corporate PyPI mirror); then
+the image runs anywhere on the internal network with no outside dependency.
 
-```bat
-cd C:\Users\Hossa\Documents\decarb-engineer
-gh auth login                 :: sign in once (browser); choose HTTPS
-gh repo create decarb-engineer --public --source . --remote origin --push
+```bash
+cd decarb-engineer
+docker build -t decarb-engineer .
+docker run -d -p 8501:8501 --name decarb-engineer decarb-engineer
 ```
 
-(Or, without the CLI: create an empty repo on github.com, then
-`git remote add origin <url>` and `git push -u origin main`.)
+Or with Compose:
 
-> The repository will be **public** so it can be deployed and shared. No secrets
-> are committed (`.env` is git-ignored; the app needs no API key to run).
-
-## 2. Deploy on Streamlit Community Cloud
-
-1. Go to **https://share.streamlit.io** and sign in with the same GitHub account.
-2. **Create app -> Deploy a public app from GitHub**.
-3. Set:
-   - **Repository:** `<your-user>/decarb-engineer`
-   - **Branch:** `main`
-   - **Main file path:** `app/streamlit_app.py`
-4. **Deploy**. After the build you get a public URL to share with anyone.
-
-Pre-filled deploy link (after the repo exists, replace `<your-user>`):
-
-```
-https://share.streamlit.io/deploy?repository=<your-user>/decarb-engineer&branch=main&mainModule=app/streamlit_app.py
+```bash
+docker compose up -d
 ```
 
-## 3. (Optional) enable live LLM agents on the hosted app
+Then open:
+- on the host:        `http://localhost:8501`
+- for colleagues:     `http://<server-hostname-or-ip>:8501`  (same LAN/VPN)
 
-In the Streamlit Cloud app: **Settings -> Secrets**, add:
+Because this is plain internal HTTP/LAN traffic, it does **not** go through the
+external web-filtering proxy that shows "your connection is not private".
+
+**Behind a corporate proxy at build time?** Pass the proxy to the build only:
+
+```bash
+docker build --build-arg HTTP_PROXY=$HTTP_PROXY --build-arg HTTPS_PROXY=$HTTPS_PROXY -t decarb-engineer .
+```
+
+(or point pip at your internal mirror). Once built, running needs no internet.
+
+## Option B: plain Python on an internal machine (no Docker)
+
+```bash
+python -m venv .venv && .venv\Scripts\activate      # Windows (use py -3.11 if needed)
+pip install -r requirements.txt
+streamlit run app/streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+Share `http://<machine-ip>:8501` with colleagues on the network.
+
+## Option C: external (Streamlit Community Cloud) — only if IT allows
+
+Gives a public `https://<name>.streamlit.app` link, but most corporate networks
+block `streamlit.app`. If you want it, ask IT to allowlist:
 
 ```
-ANTHROPIC_API_KEY = "sk-..."
+share.streamlit.io
+*.streamlit.app
+*.streamlitusercontent.com
 ```
 
-Without it, the app uses the deterministic offline proposals (the demo still runs
-end to end).
+then deploy from the GitHub repo (`main`, file `app/streamlit_app.py`).
+
+## Live LLM agents (optional, any option)
+
+Set `ANTHROPIC_API_KEY` in the container/host environment (or Streamlit secrets).
+Without it the app uses deterministic offline proposals and still runs end to end.
 
 ## Notes
-- `requirements.txt` (repo root) is what Streamlit Cloud installs.
-- `.streamlit/config.toml` carries the Schneider theme.
-- Python 3.11+ (Streamlit Cloud default is fine).
+- `requirements.txt` is the install manifest; `.streamlit/config.toml` carries the
+  Schneider theme; `data/schneider_solutions.json` is the editable solution catalog.
+- Default port 8501; change with `--server.port` or the Compose `ports` mapping.

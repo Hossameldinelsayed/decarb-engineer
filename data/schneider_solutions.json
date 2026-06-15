@@ -18,7 +18,7 @@
       ],
       "note": "Occupancy- and people-count-based control of HVAC and lighting at room level.",
       "source": "Schneider: Connected Room Solutions deliver up to 23% energy savings.",
-      "layer": "operate"
+      "layer": "onboard"
     },
     {
       "id": "led_lighting",
@@ -36,7 +36,7 @@
       ],
       "note": "LED retrofit with daylight harvesting and presence control.",
       "source": "Industry benchmark ~EUR 20-40/m2; LED + controls cut lighting 40-60%.",
-      "layer": "operate"
+      "layer": "onboard"
     },
     {
       "id": "bms_analytics",
@@ -54,7 +54,7 @@
       ],
       "note": "Continuous commissioning, fault detection & diagnostics, setpoint optimisation.",
       "source": "BMS benchmark ~EUR 27-75/m2; analytics/commissioning cut HVAC 10-20%.",
-      "layer": "optimize"
+      "layer": "operate"
     },
     {
       "id": "building_activate",
@@ -91,7 +91,7 @@
       ],
       "note": "Speed control of pumps and fans replaces throttling/damper losses.",
       "source": "VSDs on pumps/fans typically cut motor energy 20-30%.",
-      "layer": "operate"
+      "layer": "onboard"
     },
     {
       "id": "power_monitoring",
@@ -112,7 +112,7 @@
       ],
       "note": "Sub-metering visibility and alarms drive operational/behavioural savings across all loads.",
       "source": "Metering-driven operational savings typically 5-10%.",
-      "layer": "onboard"
+      "layer": "operate"
     },
     {
       "id": "plug_load_mgmt",
@@ -130,7 +130,7 @@
       ],
       "note": "Standby control and scheduling of plug and office loads.",
       "source": "Plug-load scheduling and standby control typically save 15-20%.",
-      "layer": "operate"
+      "layer": "onboard"
     }
   ],
   "replace": [

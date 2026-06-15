@@ -1,0 +1,12 @@
+# One-command internal hosting:  docker compose up -d  ->  http://<host>:8501
+services:
+  decarb:
+    build: .
+    image: decarb-engineer:latest
+    container_name: decarb-engineer
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    # Optional: enable live LLM agents by providing a key (offline works without it).
+    # environment:
+    #   - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
