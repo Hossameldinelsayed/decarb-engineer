@@ -10,7 +10,6 @@ and adjustable — never an official Schneider quote.
 from __future__ import annotations
 
 import json
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Optional
 
@@ -79,8 +78,9 @@ class Catalog(BaseModel):
         return next((s for s in self.electrify if method in s.method_match), None)
 
 
-@lru_cache(maxsize=4)
 def load_catalog(path: str | Path = DEFAULT_CATALOG_PATH) -> Catalog:
+    # Read on every call (the JSON is tiny) so edits to the catalog take effect
+    # on the next app rerun without needing a process restart.
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     return Catalog(
         reduce=[ReduceSolution.model_validate(x) for x in raw.get("reduce", [])],
