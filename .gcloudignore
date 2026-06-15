@@ -1,0 +1,12 @@
+# Files NOT uploaded to Cloud Build when deploying with `gcloud run deploy --source .`
+.git/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.claude/
+tests/
+out/
+*.result.json
+decision_log.json
+.env

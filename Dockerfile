@@ -17,12 +17,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Listen on $PORT so this works on Google Cloud Run (it injects PORT, default
+# 8080) AND locally (defaults to 8501). exec keeps streamlit as PID 1 for signals.
+ENV PORT=8501
 EXPOSE 8501
 
-# Lightweight healthcheck against Streamlit's built-in endpoint (no curl needed).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8501/_stcore/health').status==200 else 1)"
+  CMD python -c "import os,urllib.request,sys; p=os.environ.get('PORT','8501'); sys.exit(0 if urllib.request.urlopen(f'http://localhost:{p}/_stcore/health').status==200 else 1)"
 
-ENTRYPOINT ["streamlit", "run", "app/streamlit_app.py", \
-            "--server.port=8501", "--server.address=0.0.0.0", \
-            "--server.headless=true", "--browser.gatherUsageStats=false"]
+CMD ["sh", "-c", "exec streamlit run app/streamlit_app.py --server.port=${PORT:-8501} --server.address=0.0.0.0 --server.headless=true --browser.gatherUsageStats=false"]
