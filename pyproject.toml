@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decarb-engineer"
+version = "0.1.0"
+description = "Agentic 'AI decarbonization engineer' — Reduce / Replace / Electrify roadmaps, auditable to the GHG Protocol, with a human expert gate."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6,<3.0",
+]
+
+[project.optional-dependencies]
+agents = ["anthropic>=0.40.0"]
+ui = ["streamlit>=1.33", "plotly>=5.20"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+decarb = "decarb.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["decarb*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

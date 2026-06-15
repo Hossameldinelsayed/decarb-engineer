@@ -1,0 +1,54 @@
+{
+  "name": "Schneider Impact Office (demo)",
+  "location": "Western Europe",
+  "floor_area_m2": 12000,
+  "annual_electricity_kwh": 1800000,
+  "end_use_breakdown": {
+    "hvac": 0.45,
+    "lighting": 0.20,
+    "plug_loads": 0.25,
+    "other": 0.10
+  },
+  "fossil_end_uses": [
+    {
+      "name": "Gas space heating",
+      "fuel_type": "natural_gas",
+      "annual_fuel_kwh": 700000,
+      "electrifiable": true,
+      "electrification": { "method": "heat_pump", "cop": 3.2, "incumbent_efficiency": 0.88 }
+    },
+    {
+      "name": "Diesel backup genset",
+      "fuel_type": "diesel",
+      "annual_fuel_kwh": 40000,
+      "electrifiable": true,
+      "electrification": { "method": "grid_tie", "incumbent_efficiency": 0.33 }
+    },
+    {
+      "name": "Combustion vehicle fleet",
+      "fuel_type": "diesel",
+      "annual_fuel_kwh": 120000,
+      "electrifiable": true,
+      "electrification": { "method": "ev_fleet", "incumbent_efficiency": 1.0 }
+    }
+  ],
+  "grid": {
+    "monthly_intensity_kgco2e_per_kwh": [0.42, 0.41, 0.40, 0.39, 0.38, 0.37, 0.36, 0.37, 0.39, 0.41, 0.43, 0.44],
+    "market_residual_factor_kgco2e_per_kwh": null
+  },
+  "tariff": {
+    "electricity_price_per_kwh": 0.16,
+    "fuel_price_per_kwh": 0.05
+  },
+  "roof_area_m2": 4000,
+  "existing_green_fraction": 0.0,
+  "scope3_tco2e": 650,
+  "base_year": 2025,
+  "target_year": 2035,
+  "budget_capex": 2500000,
+  "constraints": {
+    "max_grid_import_kwh": null,
+    "min_pv_self_consumption": 0.0,
+    "comfort_note": "Maintain 21-24 C during occupied hours; backup power required for life-safety systems."
+  }
+}

@@ -1,0 +1,12 @@
+# Core
+pydantic>=2.6,<3.0
+
+# LLM agent layer (only needed for --live mode; the demo runs fully offline without it)
+anthropic>=0.40.0
+
+# UI
+streamlit>=1.33
+plotly>=5.20
+
+# Dev / tests
+pytest>=8.0
