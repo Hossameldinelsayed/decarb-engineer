@@ -52,6 +52,18 @@ def test_pareto_is_monotonic():
         assert b.tco2e_reduction >= a.tco2e_reduction - 1e-6
 
 
+def test_pareto_points_are_distinct_selections():
+    # Frontier must not collapse distinct (capex, abatement) trade-offs that
+    # happen to have the same measure count. Each retained point should have a
+    # distinct capex coordinate.
+    rm = _roadmap()
+    capexes = [round(p.capex, 2) for p in rm.pareto]
+    assert len(capexes) == len(set(capexes)), "duplicate/collapsed Pareto points"
+    # Distinct measure-counts can repeat now (that's the whole point), so ensure
+    # we actually retained more than just the corner cases.
+    assert len(rm.pareto) >= 4
+
+
 def test_year_phasing_within_horizon():
     rm = _roadmap()
     for m in rm.measures:

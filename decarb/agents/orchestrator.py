@@ -152,11 +152,14 @@ def _pareto(site: SiteProfile, baseline: SiteState, baseline_inv: GHGInventory,
     """
     base_op = baseline_inv.operational_location
     points: list[ParetoPoint] = []
-    seen: set[int] = set()
+    seen: set[frozenset[str]] = set()
     for k in range(steps + 1):
         budget = site.budget_capex * k / steps
         selected, final_state = _select(site, baseline, proposals, budget)
-        key = len(selected)
+        # Dedup on the actual selection identity, NOT its cardinality: different
+        # budgets can select different measure sets of the same size, which are
+        # genuinely distinct (capex, abatement) points on the frontier.
+        key = frozenset(m.name for m in selected)
         if key in seen:
             continue
         seen.add(key)

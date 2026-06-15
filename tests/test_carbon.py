@@ -55,6 +55,17 @@ def test_battery_lifts_self_consumption():
     assert with_batt <= min(800_000, 1_000_000)
 
 
+def test_battery_surplus_respects_round_trip_efficiency():
+    # base = 0.65*100,000 = 65,000; surplus = 35,000 (the binding bound here).
+    # Surplus delivers only 35,000 * 0.90 = 31,500 kWh through the battery, so
+    # self-consumption must be 96,500 — NOT the naive 100,000 (energy conservation).
+    sc = pv_self_consumption_kwh(pv_generation_kwh=100_000,
+                                 demand_kwh=1_000_000, battery_kwh=5_000)
+    assert round(sc, 1) == 96_500.0
+    # Delivered energy can never exceed available surplus.
+    assert sc <= 100_000
+
+
 def test_totals_compose():
     inv = build_inventory(_state(
         fossil_uses=[FossilUseState("Gas", "natural_gas", 500_000, 0.184)],

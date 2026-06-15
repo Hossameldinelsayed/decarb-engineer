@@ -34,12 +34,17 @@ def pv_self_consumption_kwh(pv_generation_kwh: float, demand_kwh: float,
 
     base = min(pv_generation_kwh * PV_DAYTIME_COINCIDENCE, demand_kwh)
 
-    surplus = pv_generation_kwh - base          # PV not yet used on site
+    surplus = pv_generation_kwh - base          # PV input available to charge
     remaining_demand = demand_kwh - base        # demand not yet met by PV
     battery_throughput = (
         battery_kwh * BATTERY_CYCLES_PER_YEAR * BATTERY_ROUND_TRIP_EFFICIENCY
     )
-    extra = max(0.0, min(battery_throughput, surplus, remaining_demand))
+    # All three bounds are expressed as *delivered* (output) energy: the battery
+    # throughput already nets round-trip losses, and the surplus only delivers
+    # `surplus * round_trip` to the load after charge/discharge losses. Mixing
+    # input-side surplus with output-side bounds would overstate self-consumption.
+    deliverable_from_surplus = surplus * BATTERY_ROUND_TRIP_EFFICIENCY
+    extra = max(0.0, min(battery_throughput, deliverable_from_surplus, remaining_demand))
 
     return min(base + extra, pv_generation_kwh, demand_kwh)
 

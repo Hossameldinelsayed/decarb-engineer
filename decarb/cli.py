@@ -149,8 +149,9 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--offline", action="store_true", help="Force offline proposals.")
     r.add_argument("--min-pct", dest="min_pct", type=float, default=None,
                    help="Guardrail: minimum %% to net-zero required.")
-    r.add_argument("--approve", action="store_true", help="Expert approves the roadmap.")
-    r.add_argument("--reject", action="store_true", help="Expert rejects the roadmap.")
+    decision = r.add_mutually_exclusive_group()
+    decision.add_argument("--approve", action="store_true", help="Expert approves the roadmap.")
+    decision.add_argument("--reject", action="store_true", help="Expert rejects the roadmap.")
     r.add_argument("--reviewer", default="unknown", help="Expert name for the log.")
     r.add_argument("--notes", default="", help="Expert notes for the log.")
     r.add_argument("--log", default="decision_log.json", help="Decision log path.")
