@@ -11,3 +11,6 @@ dist/
 out/
 *.result.json
 decision_log.json
+
+# Local Claude preview config
+.claude/
