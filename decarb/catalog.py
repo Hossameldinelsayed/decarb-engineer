@@ -31,6 +31,7 @@ class ReduceSolution(BaseModel):
     energy_saving_fraction: float = Field(0.0, ge=0.0, le=1.0)  # of the targeted end-use(s)
     capex_eur_per_m2: float = Field(0.0, ge=0.0)
     exclusive_group: Optional[str] = None    # at most one solution per group
+    layer: str = "operate"                   # EcoStruxure layer: onboard | operate | optimize
     scopes_affected: list[str] = Field(default_factory=lambda: ["2_location", "2_market"])
     note: str = ""
     source: str = ""
