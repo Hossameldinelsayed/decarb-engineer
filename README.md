@@ -73,12 +73,28 @@ by the on-site measures.
 
 Requires **Python 3.11+**.
 
-```bash
-python -m venv .venv
-# Windows:        .venv\Scripts\activate
-# macOS / Linux:  source .venv/bin/activate
+> **Windows note:** make sure you create the venv with a 3.11+ interpreter, not an
+> older default `python` (a system Python 3.7 will fail at `ensurepip`). Use the
+> `py` launcher — `py -0p` lists installed versions.
+
+```bat
+:: Windows (cmd / PowerShell)
+py -3.11 -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 ```
+
+```bash
+# macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+If `pip install` fails behind a corporate proxy (e.g. `SSL: WRONG_VERSION_NUMBER`),
+configure pip for your proxy or use an offline wheel cache. The CLI and tests need
+only `pydantic`; `streamlit` + `plotly` are needed for the UI, `anthropic` only for
+`--live` mode.
 
 ## Run
 
