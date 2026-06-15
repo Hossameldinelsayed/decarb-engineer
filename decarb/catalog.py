@@ -26,8 +26,10 @@ class ReduceSolution(BaseModel):
     name: str
     product: str = ""
     target_end_uses: list[str] = Field(default_factory=list)
-    energy_saving_fraction: float = 0.0      # of the targeted end-use(s)
-    capex_eur_per_m2: float = 0.0
+    # Bounds catch catalog-editing typos at load time (e.g. a negative price or a
+    # >100% saving) rather than silently clamping them in the engine.
+    energy_saving_fraction: float = Field(0.0, ge=0.0, le=1.0)  # of the targeted end-use(s)
+    capex_eur_per_m2: float = Field(0.0, ge=0.0)
     exclusive_group: Optional[str] = None    # at most one solution per group
     scopes_affected: list[str] = Field(default_factory=lambda: ["2_location", "2_market"])
     note: str = ""
