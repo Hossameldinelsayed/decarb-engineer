@@ -71,6 +71,26 @@ def test_year_phasing_within_horizon():
         assert rm.base_year <= m.year <= rm.target_year
 
 
+def test_large_building_uses_ebo_not_activate():
+    # The 12,000 m2 demo office is enterprise-scale -> EBO, not Building Activate.
+    rm = _roadmap()
+    names = [m.name for m in rm.measures]
+    assert any("Building Operation" in n for n in names)
+    assert not any("Building Activate" in n for n in names)
+
+
+def test_measures_carry_vendor():
+    rm = _roadmap()
+    for m in rm.measures:
+        assert m.proposal.params.get("vendor"), f"{m.name} missing vendor"
+
+
+def test_catalog_has_schneider_platform():
+    from decarb.catalog import load_catalog
+    plat = {p.id for p in load_catalog().platform}
+    assert {"resource_advisor", "building_advisor", "microgrid_advisor", "planon"} <= plat
+
+
 def test_expert_gate_clean_by_default():
     rm = _roadmap()
     site = load_site(SCENARIO)

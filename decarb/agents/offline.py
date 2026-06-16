@@ -14,6 +14,10 @@ from ..models.site import SiteProfile
 
 SOURCE = "offline"
 
+# Building Operation (EBO) is the enterprise BMS; Building Activate targets small
+# buildings (~under 9,300 m2). Propose the size-appropriate one.
+BMS_EBO_MIN_M2 = 9300.0
+
 
 def reduce_proposals(site: SiteProfile) -> list[MeasureProposal]:
     """One proposal per applicable Schneider efficiency solution."""
@@ -24,12 +28,18 @@ def reduce_proposals(site: SiteProfile) -> list[MeasureProposal]:
         # Only propose if at least one targeted end-use carries load.
         if not any(eub.share(u) > 0 for u in sol.target_end_uses):
             continue
+        # Pick the right BMS for the building size (both are exclusive_group 'bms').
+        if sol.id == "bms_activate" and site.floor_area_m2 >= BMS_EBO_MIN_M2:
+            continue
+        if sol.id == "bms_ebo" and site.floor_area_m2 < BMS_EBO_MIN_M2:
+            continue
         out.append(MeasureProposal(
             pillar=Pillar.REDUCE,
             action_type=ActionType.EFFICIENCY_SOLUTION,
             name=sol.name,
             rationale=sol.note,
-            params={"solution_id": sol.id, "exclusive_group": sol.exclusive_group},
+            params={"solution_id": sol.id, "exclusive_group": sol.exclusive_group,
+                    "vendor": sol.vendor},
             source=SOURCE,
         ))
     return out
@@ -42,12 +52,14 @@ def replace_proposals(site: SiteProfile) -> list[MeasureProposal]:
         # Skip PV/battery when there is no roof.
         if sol.action_type in ("rooftop_pv", "battery_storage") and site.roof_area_m2 <= 0:
             continue
+        params = dict(sol.params)
+        params["vendor"] = sol.vendor
         out.append(MeasureProposal(
             pillar=Pillar.REPLACE,
             action_type=ActionType(sol.action_type),
             name=sol.name,
             rationale=sol.note,
-            params=dict(sol.params),
+            params=params,
             source=SOURCE,
         ))
     return out
@@ -68,12 +80,13 @@ def electrify_proposals(site: SiteProfile) -> list[MeasureProposal]:
             sol = catalog.electrify_for_fuel(use.fuel_type.value)
         name = f"{sol.name} ({use.name})" if sol else f"Electrify: {use.name}"
         product = sol.product if sol else ""
+        vendor = sol.vendor if sol else "3rd party"
         out.append(MeasureProposal(
             pillar=Pillar.ELECTRIFY,
             action_type=ActionType.ELECTRIFY_END_USE,
             name=name,
             rationale=(sol.note if sol else f"Remove Scope 1 from {use.name}."),
-            params={"target": use.name, "product": product},
+            params={"target": use.name, "product": product, "vendor": vendor},
             source=SOURCE,
         ))
     return out

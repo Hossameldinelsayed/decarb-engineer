@@ -42,6 +42,7 @@ def _enrich(props: list[MeasureProposal]) -> list[MeasureProposal]:
         if sol is None:
             continue  # drop hallucinated solution ids
         p.params["exclusive_group"] = sol.exclusive_group
+        p.params["vendor"] = sol.vendor
         p.name = sol.name
         enriched.append(p)
     return enriched

@@ -51,7 +51,7 @@ def test_stacked_hvac_solutions_have_diminishing_returns():
                          name="VSD", params={"solution_id": "vsd_drives"})
     m1, s1 = score_proposal(site, state, p1)
     p2 = MeasureProposal(pillar=Pillar.REDUCE, action_type=ActionType.EFFICIENCY_SOLUTION,
-                         name="BMS", params={"solution_id": "bms_analytics"})
+                         name="BMS", params={"solution_id": "bms_ebo"})
     m2_after, _ = score_proposal(site, s1, p2)      # scored on the reduced state
     m2_fresh, _ = score_proposal(site, state, p2)   # scored on the original state
     assert abs(m2_after.end_use_deltas["hvac"]) < abs(m2_fresh.end_use_deltas["hvac"])

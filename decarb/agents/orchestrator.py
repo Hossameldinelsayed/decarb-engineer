@@ -176,7 +176,18 @@ def _pareto(site: SiteProfile, baseline: SiteState, baseline_inv: GHGInventory,
             tco2e_reduction=base_op - final_inv.operational_location,
             measure_count=len(selected),
         ))
-    return points
+
+    # Keep only NON-DOMINATED points: the greedy optimises a blended location+market
+    # metric, so a higher-capex selection can occasionally yield lower location-based
+    # abatement. A true frontier shows the best abatement achievable for <= each capex.
+    points.sort(key=lambda p: p.capex)
+    frontier: list[ParetoPoint] = []
+    best = float("-inf")
+    for p in points:
+        if p.tco2e_reduction > best + 1e-6:
+            frontier.append(p)
+            best = p.tco2e_reduction
+    return frontier
 
 
 def run(site: SiteProfile, live: bool | None = None) -> Roadmap:

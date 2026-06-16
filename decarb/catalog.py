@@ -24,6 +24,7 @@ class ReduceSolution(BaseModel):
     id: str
     name: str
     product: str = ""
+    vendor: str = "Schneider Electric"       # Schneider Electric | Schneider (Planon) | 3rd party | ...
     target_end_uses: list[str] = Field(default_factory=list)
     # Bounds catch catalog-editing typos at load time (e.g. a negative price or a
     # >100% saving) rather than silently clamping them in the engine.
@@ -42,6 +43,7 @@ class SupplySolution(BaseModel):
     id: str
     name: str
     product: str = ""
+    vendor: str = "Schneider Electric"
     action_type: str = ""                    # rooftop_pv | battery_storage | green_procurement
     params: dict[str, Any] = Field(default_factory=dict)
     note: str = ""
@@ -54,8 +56,25 @@ class ElectrifySolution(BaseModel):
     id: str
     name: str
     product: str = ""
+    vendor: str = "Schneider Electric"
     method_match: list[str] = Field(default_factory=list)
     fuel_match: list[str] = Field(default_factory=list)
+    note: str = ""
+    source: str = ""
+
+
+class PlatformSolution(BaseModel):
+    """A Schneider Apps/Analytics/Services product (the Optimize layer).
+
+    These orchestrate the roadmap (carbon accounting, analytics, advisory) but
+    are not separately priced/scored in the MVP, to avoid double-counting the
+    savings already attributed to the measures they enable.
+    """
+
+    id: str
+    name: str
+    vendor: str = "Schneider Electric"
+    show_when: str = "always"                # always | if_bms | if_supply
     note: str = ""
     source: str = ""
 
@@ -64,6 +83,7 @@ class Catalog(BaseModel):
     reduce: list[ReduceSolution] = Field(default_factory=list)
     replace: list[SupplySolution] = Field(default_factory=list)
     electrify: list[ElectrifySolution] = Field(default_factory=list)
+    platform: list[PlatformSolution] = Field(default_factory=list)
 
     def reduce_by_id(self, sid: str) -> Optional[ReduceSolution]:
         return next((s for s in self.reduce if s.id == sid), None)
@@ -86,4 +106,5 @@ def load_catalog(path: str | Path = DEFAULT_CATALOG_PATH) -> Catalog:
         reduce=[ReduceSolution.model_validate(x) for x in raw.get("reduce", [])],
         replace=[SupplySolution.model_validate(x) for x in raw.get("replace", [])],
         electrify=[ElectrifySolution.model_validate(x) for x in raw.get("electrify", [])],
+        platform=[PlatformSolution.model_validate(x) for x in raw.get("platform", [])],
     )

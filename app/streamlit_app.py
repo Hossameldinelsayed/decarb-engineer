@@ -104,11 +104,21 @@ html, body, [class*="css"], .stApp, button, input, textarea { font-family: 'Inte
 .layer.optimize { background:linear-gradient(120deg,#08230F,#1C7A3B); }
 .layer.operate  { background:linear-gradient(120deg,#1C7A3B,#2EA24A); }
 .layer.onboard  { background:linear-gradient(120deg,#2EA24A,#3DCD58); color:#08230F; }
-.chip { display:inline-block; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.40);
-        padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600; margin:4px 6px 2px 0;
-        animation:popIn .5s ease both; }
+.chip { display:inline-flex; align-items:center; background:rgba(255,255,255,.18);
+        border:1px solid rgba(255,255,255,.40); padding:5px 8px 5px 12px; border-radius:999px;
+        font-size:12px; font-weight:600; margin:4px 6px 2px 0; animation:popIn .5s ease both; }
 .layer.onboard .chip { background:rgba(8,35,15,.10); border-color:rgba(8,35,15,.25); }
 .chip.empty { opacity:.65; font-style:italic; border-style:dashed; background:transparent; }
+.chip.platform { border-style:dashed; border-width:2px; }
+.vtag { font-size:9px; font-weight:800; padding:2px 6px; border-radius:6px; margin-left:8px;
+        letter-spacing:.3px; white-space:nowrap; }
+.vtag.se { background:#3DCD58; color:#08230F; }
+.vtag.planon { background:#7C5CFF; color:#fff; }
+.vtag.tp { background:rgba(120,120,120,.45); color:#fff; }
+.layer.onboard .vtag.tp { background:rgba(8,35,15,.30); color:#fff; }
+.vtag.mix { background:#BFE9C8; color:#08230F; }
+.vlegend { font-size:11.5px; color:#5a6b60; margin:2px 0 2px; }
+.vlegend b { padding:2px 6px; border-radius:6px; font-size:10px; }
 
 /* ---- net-zero progress bar ---- */
 .nz { height:16px; border-radius:999px; background:#E4EFE8; overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,.08); }
@@ -232,6 +242,18 @@ b, f = roadmap.baseline_inventory, roadmap.final_inventory
 catalog = load_catalog()
 EUR = "€{:,.0f}".format
 
+# Human-readable GHG Protocol scope labels (the engine uses short internal codes).
+SCOPE_LABELS = {
+    "1": "Scope 1",
+    "2_location": "Scope 2 (location-based)",
+    "2_market": "Scope 2 (market-based)",
+    "3": "Scope 3",
+}
+
+
+def scopes_human(codes: list[str]) -> str:
+    return ", ".join(SCOPE_LABELS.get(c, c) for c in codes)
+
 reduce_measures = [m for m in roadmap.measures if m.pillar == Pillar.REDUCE]
 replace_measures = [m for m in roadmap.measures if m.pillar == Pillar.REPLACE]
 electrify_measures = [m for m in roadmap.measures if m.pillar == Pillar.ELECTRIFY]
@@ -246,25 +268,63 @@ def short(label: str) -> str:
 # Solution Architecture (EcoStruxure 3 layers)
 # --------------------------------------------------------------------------- #
 st.markdown('<span class="steplab">SOLUTION ARCHITECT</span>', unsafe_allow_html=True)
-st.markdown('<div class="sub">EcoStruxure architecture for the recommended roadmap: '
-            'Onboard (connect &amp; measure) at the base, Operate (control) in the middle, '
-            'Optimize (analytics, clean supply &amp; electrification) on top.</div>',
+st.markdown('<div class="sub">EcoStruxure architecture for the recommended roadmap. '
+            'Each solution is tagged by vendor; the Optimize layer carries the Schneider '
+            'Apps / Analytics / Services that orchestrate everything.</div>',
             unsafe_allow_html=True)
+st.markdown('<div class="vlegend">Vendor tags: '
+            '<b class="vtag se">SE</b> Schneider Electric &nbsp; '
+            '<b class="vtag planon">Planon</b> Schneider (Planon) &nbsp; '
+            '<b class="vtag mix">3rd-party + SE</b> 3rd-party hardware, Schneider controls &nbsp; '
+            '<b class="vtag tp">3rd-party</b> third party</div>', unsafe_allow_html=True)
 
-layers: dict[str, list[str]] = {"optimize": [], "operate": [], "onboard": []}
+# vendor string -> (tag text, css class)
+VENDOR_TAG = {
+    "Schneider Electric": ("SE", "se"),
+    "Schneider (Planon)": ("Planon", "planon"),
+    "3rd party + SE controls": ("3rd-party + SE", "mix"),
+    "3rd party + SE inverters": ("3rd-party + SE", "mix"),
+    "3rd party + SE microgrid": ("3rd-party + SE", "mix"),
+    "3rd party": ("3rd-party", "tp"),
+}
+
+
+def _vtag(vendor: str) -> str:
+    text, cls = VENDOR_TAG.get(vendor, ("3rd-party", "tp"))
+    return f'<span class="vtag {cls}">{text}</span>'
+
+
+# Build each layer's chips as (label, vendor, is_platform).
+layers: dict[str, list[tuple]] = {"optimize": [], "operate": [], "onboard": []}
 for m in reduce_measures:
     sol = catalog.reduce_by_id(m.proposal.params.get("solution_id", ""))
-    layers.get(sol.layer if sol else "operate", layers["operate"]).append(short(m.name))
+    key = sol.layer if sol else "operate"
+    layers.setdefault(key, []).append(
+        (short(m.name), m.proposal.params.get("vendor", "Schneider Electric"), False))
 for m in replace_measures + electrify_measures:
-    layers["optimize"].append(short(m.name))
+    layers["optimize"].append(
+        (short(m.name), m.proposal.params.get("vendor", "Schneider Electric"), False))
+
+# Schneider Apps/Analytics/Services platform products go on top of the Optimize layer.
+has_bms = any(m.proposal.params.get("exclusive_group") == "bms" for m in reduce_measures)
+has_supply = any(m.pv_kwp > 0 or m.battery_kwh > 0 for m in replace_measures)
+platform_chips = []
+for p in catalog.platform:
+    if (p.show_when == "always" or (p.show_when == "if_bms" and has_bms)
+            or (p.show_when == "if_supply" and has_supply)):
+        platform_chips.append((p.name, p.vendor, True))
+layers["optimize"] = platform_chips + layers["optimize"]
 
 
-def _chips(items: list[str]) -> str:
+def _chips(items: list[tuple]) -> str:
     if not items:
         return '<span class="chip empty">no selected solution in this layer</span>'
-    return "".join(
-        f'<span class="chip" style="animation-delay:{i*0.05:.2f}s" title="{c}">{c}</span>'
-        for i, c in enumerate(items))
+    out = []
+    for i, (label, vendor, is_platform) in enumerate(items):
+        cls = "chip platform" if is_platform else "chip"
+        out.append(f'<span class="{cls}" style="animation-delay:{i*0.05:.2f}s" '
+                   f'title="{vendor}">{label}{_vtag(vendor)}</span>')
+    return "".join(out)
 
 
 def _layer(key: str, name: str, desc: str, delay: float) -> str:
@@ -276,11 +336,11 @@ def _layer(key: str, name: str, desc: str, delay: float) -> str:
 st.markdown(
     '<div class="arch">'
     + _layer("optimize", "OPTIMIZE",
-             "Analyse, advise, and transform supply and end-uses.", 0.0)
+             "Advisory, analytics, clean supply &amp; electrification.", 0.0)
     + _layer("operate", "OPERATE",
-             "Supervisory software that runs the building efficiently.", 0.08)
+             "Supervisory software that runs the building.", 0.08)
     + _layer("onboard", "ONBOARD",
-             "Connect, sense and meter the building's field devices.", 0.16)
+             "Sensors, drives &amp; field devices that measure &amp; connect.", 0.16)
     + "</div>", unsafe_allow_html=True)
 
 # Headline KPIs + animated net-zero bar.
@@ -312,10 +372,10 @@ for sol in catalog.reduce:
                            name=sol.name, params={"solution_id": sol.id})
     m, _ = score_proposal(site, baseline_state, prop)
     menu_rows.append({
-        "Solution": sol.name, "Schneider product": sol.product, "Layer": sol.layer,
-        "Targets": ", ".join(sol.target_end_uses), "€/m²": sol.capex_eur_per_m2,
-        "Total price €": round(m.capex), "kWh saved/yr": round(-m.electricity_kwh_delta),
-        "tCO₂e/yr": round(m.tco2e_delta, 1)})
+        "Solution": sol.name, "Product": sol.product, "Vendor": sol.vendor,
+        "Layer": sol.layer, "Targets": ", ".join(sol.target_end_uses),
+        "€/m²": sol.capex_eur_per_m2, "Total price €": round(m.capex),
+        "kWh saved/yr": round(-m.electricity_kwh_delta), "tCO₂e/yr": round(m.tco2e_delta, 1)})
 st.dataframe(menu_rows, use_container_width=True, hide_index=True)
 
 reduce_kwh = sum(-m.electricity_kwh_delta for m in reduce_measures)
@@ -342,7 +402,7 @@ st.markdown('<div class="sub">Clean supply: rooftop PV, storage and a green PPA.
 if replace_measures:
     st.dataframe(
         [{"Solution": m.name, "Price €": round(m.capex), "PV kWp": round(m.pv_kwp),
-          "tCO₂e/yr": round(m.tco2e_delta, 1), "scopes": ", ".join(m.scopes_affected)}
+          "tCO₂e/yr": round(m.tco2e_delta, 1), "Scopes affected": scopes_human(m.scopes_affected)}
          for m in replace_measures], use_container_width=True, hide_index=True)
 else:
     st.caption("No replace measures selected (e.g. no roof area).")
@@ -425,6 +485,7 @@ st.write("")
 st.markdown('<span class="steplab">RECOMMENDED SOLUTIONS</span>', unsafe_allow_html=True)
 st.dataframe(
     [{"Year": m.year, "Pillar": m.pillar.value, "Solution": m.name,
+      "Vendor": m.proposal.params.get("vendor", "Schneider Electric"),
       "Price €": round(m.capex), "tCO₂e/yr": round(m.tco2e_delta, 1),
       "€/tCO₂e": (None if m.cost_per_tco2e == float("inf") else round(m.cost_per_tco2e))}
      for m in roadmap.measures], use_container_width=True, hide_index=True)
